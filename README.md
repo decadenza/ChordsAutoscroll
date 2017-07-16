@@ -10,10 +10,11 @@ This simple project solves the annoying scrolling problem when you sing or play 
 You just need to open your file and click "Play". You can adjust speed and text size as you need.
 The GUI also allows simple editing tasks.
 
-USAGE:
+**USAGE**:
+
 Simply copy all the files in a folder and start BlondieAutoscroll.pyw with Python 3.
 
-FUTURE IMPROVEMENTS:
-- Update recent opened file list at runtime
-- Dark mode (black background)
-- More friendly GUI
+**FUTURE IMPROVEMENTS**:
+- [ ] Update recent opened file list at runtime
+- [ ] Dark mode (black background)
+- [ ] More friendly GUI
