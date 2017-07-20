@@ -16,6 +16,7 @@ Simply copy all the files in a folder and start BlondieAutoscroll.pyw with Pytho
 
 **FUTURE IMPROVEMENTS**:
 - [ ] Update recent opened file list at runtime
+- [ ] Save settings for each file
 - [ ] Dark mode (black background)
 - [ ] Solve text encoding issues
 - [ ] More friendly GUI
