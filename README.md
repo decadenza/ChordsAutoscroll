@@ -1,4 +1,4 @@
-# BlondieAutoscroll
+# BlondieAutoscroll ![alt Logo](https://github.com/decadenza/blondieautoscroll/raw/master/media/icon.png)
 Lyrics and chords auto scroller for musicians, guitar players, etc...
 
 **REQUIREMENTS**:
