@@ -1,0 +1,5 @@
+Here you can find windows compiled binaries.
+
+Unzip and execute the .exe file.
+
+Please reaport any problem.
