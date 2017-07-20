@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #   Author: Pasquale Lafiosca
-#   Date:   03 June 2017
+#   Date:   20 July 2017
 #
 '''
 Copyright 2017 Pasquale Lafiosca
@@ -28,7 +28,7 @@ from tkinter import constants as c
 class Config:
     def __init__(self):
         global CURPATH
-        self.path=CURPATH+"/config"
+        self.path=os.path.join(CURPATH,"config")
         try:
             with open(self.path, 'r') as f:
                 self.data=json.load(f)
@@ -63,8 +63,7 @@ class Gui:
         self.root=root
         root.geometry("%dx%d+0+0" % (round(root.winfo_screenwidth()*0.8), round(root.winfo_screenheight()*0.8))) #default window size 80%
         root.title('Blondie Autoscroll 0.9b')
-        root.iconphoto(True,PhotoImage(file=CURPATH+"/media/icon.png"))
-        #root.iconbitmap(CURPATH+"/media/icon.ico")
+        root.iconphoto(True,PhotoImage(file=os.path.join(CURPATH,"media","icon.png")))
         root.option_add("*Font", "Helvetica 12") #default font
         root.protocol("WM_DELETE_WINDOW", self.onClose)
         
@@ -97,7 +96,7 @@ class Gui:
         self.root.config(menu=self.menubar)
         
         #root frame
-        froot=Frame(root,bg="#CC0000")
+        froot=Frame(root)
         froot.pack(side=c.TOP,pady=5,padx=5,fill=c.BOTH,expand=1)
         
         #main frame
@@ -304,15 +303,15 @@ class FileManager():
             originalSeed=hashlib.md5(s.encode()).hexdigest()
         return curMd5 != originalSeed
 
-#current path
-CURPATH=os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, CURPATH+"/lib/")
+if __name__ == "__main__":
+    #current path
+    CURPATH=os.path.dirname(os.path.realpath(__file__))
 
-#configuration
-CONFIG = Config()
+    #configuration
+    CONFIG = Config()
 
-#starts gui
-GUI=Gui(Tk())
-GUI.mainloop()
+    #starts gui
+    GUI=Gui(Tk())
+    GUI.mainloop()
 
-CONFIG.save()
+    CONFIG.save()
