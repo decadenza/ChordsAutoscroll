@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #   Author: Pasquale Lafiosca
-#   Date:   20 July 2017
+#   Last modified:   21 March 2018
 #
 '''
 Copyright 2017 Pasquale Lafiosca
@@ -22,7 +22,8 @@ Copyright 2017 Pasquale Lafiosca
 #general import
 import os,sys,time,hashlib,threading,json
 from tkinter import Tk,Frame,Label,Entry,Message,Button,messagebox,Text,Menu,Scrollbar,filedialog,IntVar,font,PhotoImage
-from tkinter import constants as c 
+from tkinter import constants as c
+import re, json
 
 #configuration file
 class Config:
@@ -75,7 +76,8 @@ class Gui:
         self.speed=IntVar()
         self.speed.set(10)
         self.runningScroll=False
-        
+        self.settingsPattern = re.compile('\n\nBlondieAutoscrollSettings:(\{.*\})')
+        self.settings = {}
         #menu
         self.menubar=Menu(self.root)
         self.filemenu=Menu(self.menubar, tearoff=0)
@@ -170,8 +172,32 @@ class Gui:
             CONFIG.insertRecentFile(filename)
             self.file.open(filename)
             self.txtMain.delete(1.0,c.END)
-            self.txtMain.insert(1.0,self.file.getContent())
-        
+            content = self.file.getContent()
+            #Settings
+            m = re.search(self.settingsPattern, content)
+            if m and m.group(1):
+                try:
+                    self.settings = json.loads(m.group(1)) # Loads settings from file
+                    self.speed.set(self.settings["Speed"])
+                    self._setFontSize(self.settings["Size"])
+                except:
+                    messagebox.showwarning("Warning","Cannot load setting data. Sorry.")
+                    self._setSettingsData()
+            else:
+                self._setSettingsData()
+            
+            content = re.sub(self.settingsPattern,'',content) # Remove settings string before write on screen
+            self.txtMain.insert(1.0,content)
+    
+    def _setSettingsData(self):
+        self.settings = {"Speed":self.speed.get(),"Size":self._getFontSize()}
+    
+    def _settingsChanged(self):
+        if "Speed" in self.settings and "Size" in self.settings and ( self.settings["Speed"] != self.speed.get() or self.settings["Size"] != self._getFontSize() ):
+            return True
+        else:
+            return False
+    
     def saveFile(self,current=False):
         global CONFIG
         if current:
@@ -181,14 +207,18 @@ class Gui:
         if filename:
             CONFIG.insertRecentFile(filename)
             self.file.open(filename)
-            self.file.writeContent(self.txtMain.get(1.0,c.END)[:-1])
+            self._setSettingsData()
+            self.file.writeContent(self.txtMain.get(1.0,c.END)[:-1]+"\n\nBlondieAutoscrollSettings:"+json.dumps(self.settings))
 
     def closeFile(self):
-        if self.file.hasChanged(hashlib.md5(self.txtMain.get(1.0,c.END)[:-1].encode()).hexdigest()):
+        if not self.txtMain.get(1.0,c.END)[:-1]: # Empty view
+            return True
+        if self.file.hasChanged(hashlib.md5((self.txtMain.get(1.0,c.END)[:-1]+"\n\nBlondieAutoscrollSettings:"+json.dumps(self.settings)).encode()).hexdigest()) or self._settingsChanged():
             if messagebox.askyesno("Save changes","Current document has been modified. Do you want to save changes?"):
                 self.saveFile()
         self.txtMain.delete(1.0,c.END)
         self.file.close()
+        return True
     
     def mainloop(self):
         self.root.mainloop()
@@ -197,6 +227,15 @@ class Gui:
         self.closeFile()
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.root.destroy()
+    
+    def _getFontSize(self):
+        return font.Font(font=self.txtMain["font"])["size"]
+    
+    def _setFontSize(self,newsize):
+        f = font.Font(font=self.txtMain["font"])
+        f.config(size=newsize)
+        self.txtMain.config(font=f)
+        self.txtMain.update_idletasks()
     
     def changeFontSize(self,a):
         f = font.Font(font=self.txtMain["font"])
@@ -230,7 +269,7 @@ class Gui:
     def autoscroll_callback(self):
         while(float(self.scrollbar.get()[1])<1 and self.runningScroll):
             self.txtMain.yview(c.SCROLL,1,c.UNITS)
-            time.sleep(15/self.speed.get()) #CONSTANT TO BE AJUSTED HERE
+            time.sleep(20/self.speed.get()) #CONSTANT TO BE AJUSTED HERE
         if self.runningScroll:
             self.stopAutoscroll()
     
@@ -294,14 +333,21 @@ class FileManager():
             return False
     
     def hasChanged(self,curMd5):
-        if self.filename:
-            f=open(self.filename)
-            originalSeed=hashlib.md5(f.read().encode()).hexdigest()
-            f.close()
+        print(self.filename)
+        s = self.getContent()
+        print("content", s)
+        if s:
+            originalSeed=hashlib.md5(s.encode()).hexdigest()
         else: #if there's no open file, check if curMd5 differs from empty string
             s=""
             originalSeed=hashlib.md5(s.encode()).hexdigest()
         return curMd5 != originalSeed
+    
+    def writeSettingsToFile(self):
+        pass
+    
+    def readSettings(self,content):
+        pass
 
 if __name__ == "__main__":
     #current path
@@ -313,5 +359,4 @@ if __name__ == "__main__":
     #starts gui
     GUI=Gui(Tk())
     GUI.mainloop()
-
     CONFIG.save()
