@@ -255,21 +255,18 @@ class Gui:
         self.txtMain.update_idletasks()
     
     def autoscroll(self):
-        if not self.runningScroll:
+        if not self.runningScroll and threading.active_count() < 2: # Check to avoid multiple scrolling threads
             if(float(self.scrollbar.get()[1])==1): #if we are at the end, let's start from beginning
                 self.txtMain.see(1.0)
             
             self.runningScroll=True
-            
             #INITIAL DELAY
             self.txtMain.mark_set("initialDelay",1.0)
             self.txtMain.mark_gravity("initialDelay",c.RIGHT)
             self.txtMain.insert("initialDelay",os.linesep*20) # SET CONSTANT HERE
             self.txtMain.config(state=c.DISABLED)
             self.txtMain.update_idletasks()
-            t=threading.Thread(target=self.autoscroll_callback)
-            t.daemon=True
-            t.start()
+            threading.Thread(target=self.autoscroll_callback,name="ScrollingThread",daemon=True).start()
             
             self.btnPlay.config(text="Stop",relief=c.SUNKEN,command=lambda: self.stopAutoscroll())
             self.btnPlay.update_idletasks()   
@@ -277,7 +274,10 @@ class Gui:
     def autoscroll_callback(self):
         while(float(self.scrollbar.get()[1])<1 and self.runningScroll):
             self.txtMain.yview(c.SCROLL,1,c.UNITS)
-            time.sleep(60/self.speed.get()) #CONSTANT TO BE AJUSTED HERE
+            end = time.time() + 60/self.speed.get()
+            while(time.time() < end and self.runningScroll): # trick to stop immediately
+                time.sleep(.1) 
+            
         if self.runningScroll:
             self.stopAutoscroll()
     
