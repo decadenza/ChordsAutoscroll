@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #   Author: Pasquale Lafiosca
-#   Last modified:   21 March 2018
+#   Last modified:   25 July 2018
 #
 '''
 Copyright 2017 Pasquale Lafiosca
@@ -19,13 +19,13 @@ Copyright 2017 Pasquale Lafiosca
    See the License for the specific language governing permissions and
    limitations under the License.
 '''
-#general import
+# General import
 import os,sys,time,hashlib,threading,json
 from tkinter import Tk,Frame,Label,Entry,Message,Button,messagebox,Text,Menu,Scrollbar,filedialog,IntVar,font,PhotoImage
 from tkinter import constants as c
 import re, json
 
-#configuration file
+# Configuration file
 class Config:
     def __init__(self):
         global CURPATH
@@ -74,7 +74,7 @@ class Gui:
         else:
             self.file=FileManager()
         self.speed=IntVar()
-        self.speed.set(10)
+        self.speed.set(30)
         self.runningScroll=False
         self.settingsPattern = re.compile('\n\nBlondieAutoscrollSettings:(\{.*\})')
         self.settings = {}
@@ -91,9 +91,12 @@ class Gui:
         #recent files (I should update this at runtime...)
         self.filemenu.add_separator()
         
+        self.recent=Menu(self.filemenu, tearoff=0)
+        self.filemenu.add_cascade(label="Recent files", menu=self.recent)
+        
         if CONFIG.get("recent") and len(CONFIG.get("recent"))>0:
             for n,p in enumerate(CONFIG.get("recent")):
-                self.filemenu.add_command(label=str(n+1)+": "+str(p),command=lambda p=p: self.openNewFile(str(p)))
+                self.recent.add_command(label=str(n+1)+": "+str(p),command=lambda p=p: self.openNewFile(str(p)))
         
         self.root.config(menu=self.menubar)
         
@@ -169,7 +172,10 @@ class Gui:
                 messagebox.showwarning("Not found","Selected file was not found. Sorry.")
         if filename:
             self.closeFile()
+            self.recent.delete(0,len(CONFIG.get("recent"))-1)
             CONFIG.insertRecentFile(filename)
+            for n,p in enumerate(CONFIG.get("recent")):
+                self.recent.add_command(label=str(n+1)+": "+str(p),command=lambda p=p: self.openNewFile(str(p)))
             self.file.open(filename)
             self.txtMain.delete(1.0,c.END)
             content = self.file.getContent()
@@ -188,6 +194,8 @@ class Gui:
             
             content = re.sub(self.settingsPattern,'',content) # Remove settings string before write on screen
             self.txtMain.insert(1.0,content)
+            
+            
     
     def _setSettingsData(self):
         self.settings = {"Speed":self.speed.get(),"Size":self._getFontSize()}
@@ -256,7 +264,7 @@ class Gui:
             #INITIAL DELAY
             self.txtMain.mark_set("initialDelay",1.0)
             self.txtMain.mark_gravity("initialDelay",c.RIGHT)
-            self.txtMain.insert("initialDelay",os.linesep*self.speed.get())
+            self.txtMain.insert("initialDelay",os.linesep*20) # SET CONSTANT HERE
             self.txtMain.config(state=c.DISABLED)
             self.txtMain.update_idletasks()
             t=threading.Thread(target=self.autoscroll_callback)
@@ -269,7 +277,7 @@ class Gui:
     def autoscroll_callback(self):
         while(float(self.scrollbar.get()[1])<1 and self.runningScroll):
             self.txtMain.yview(c.SCROLL,1,c.UNITS)
-            time.sleep(20/self.speed.get()) #CONSTANT TO BE AJUSTED HERE
+            time.sleep(60/self.speed.get()) #CONSTANT TO BE AJUSTED HERE
         if self.runningScroll:
             self.stopAutoscroll()
     
@@ -333,9 +341,7 @@ class FileManager():
             return False
     
     def hasChanged(self,curMd5):
-        print(self.filename)
         s = self.getContent()
-        print("content", s)
         if s:
             originalSeed=hashlib.md5(s.encode()).hexdigest()
         else: #if there's no open file, check if curMd5 differs from empty string
