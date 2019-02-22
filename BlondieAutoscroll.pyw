@@ -349,11 +349,6 @@ class FileManager():
             originalSeed=hashlib.md5(s.encode()).hexdigest()
         return curMd5 != originalSeed
     
-    def writeSettingsToFile(self):
-        pass
-    
-    def readSettings(self,content):
-        pass
 
 if __name__ == "__main__":
     #current path
@@ -364,5 +359,10 @@ if __name__ == "__main__":
 
     #starts gui
     GUI=Gui(Tk())
+    
+    # Open file if passed as argument
+    if len(sys.argv)>1:
+        GUI.openNewFile(sys.argv[1])
+    
     GUI.mainloop()
     CONFIG.save()
