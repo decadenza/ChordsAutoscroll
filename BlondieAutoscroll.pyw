@@ -232,8 +232,8 @@ class Gui:
         self.root.mainloop()
     
     def onClose(self):
-        self.closeFile()
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.closeFile()
             self.root.destroy()
     
     def _getFontSize(self):
