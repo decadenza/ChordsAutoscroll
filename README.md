@@ -18,7 +18,8 @@ python3 ChordsAutoscroll.py
 ```
 
 **FUTURE IMPROVEMENTS**:
-Feel free to help:
+
+I would appreciate help to
 - [ ] Update recent opened file list at runtime
 - [ ] Save settings for each file
 - [ ] Dark mode (black background)
