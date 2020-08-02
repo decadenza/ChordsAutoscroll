@@ -1,4 +1,4 @@
-# Chords Autoscroll ![alt Logo](https://github.com/decadenza/chordsautoscroll/raw/master/media/icon.png)
+# ![alt Logo](https://github.com/decadenza/chordsautoscroll/raw/master/media/icon.png) Chords Autoscroll 
 Lyrics and chords auto scroller for musicians, guitar players, etc...
 
 **REQUIREMENTS**:
