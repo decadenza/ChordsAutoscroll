@@ -349,7 +349,7 @@ class FileManager():
             originalSeed=hashlib.md5(s.encode()).hexdigest()
         return curMd5 != originalSeed
     
-
+    
 if __name__ == "__main__":
     #current path
     CURPATH=os.path.dirname(os.path.realpath(__file__))
