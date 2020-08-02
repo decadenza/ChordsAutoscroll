@@ -6,6 +6,7 @@ You just need to open your file and click "Play". You can adjust speed and text 
 The GUI also allows simple editing tasks.
 
 **NO REQUIREMENTS**:
+
 Works with Python 3 with standard libraries
 
 Tested with *Python 3.4.2* and *Python 3.8.5*
