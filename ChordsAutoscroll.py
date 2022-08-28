@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-#   Author: Pasquale Lafiosca
-#   Last modified:   25 July 2018
-#
 '''
 Copyright 2017 Pasquale Lafiosca
 
@@ -20,14 +16,37 @@ Copyright 2017 Pasquale Lafiosca
    limitations under the License.
 '''
 # General import
-import os,sys,time,hashlib,threading,json
-from tkinter import Tk,Frame,Label,Entry,Message,Button,messagebox,Text,Menu,Scrollbar,filedialog,IntVar,font,PhotoImage
+import os
+import sys
+import time
+import re
+import hashlib
+import threading
+import json
+from tkinter import (
+        Tk,
+        Frame,
+        Label,
+        Entry,
+        Message,
+        Button,
+        messagebox,
+        Text,
+        Menu,
+        Scrollbar,
+        filedialog,
+        IntVar,
+        font,
+        PhotoImage
+    )
 from tkinter import constants as c
-import re, json
 
-# Configuration file
+
+
 class Config:
+    """ Configuration manager """
     def __init__(self):
+        
         global CURPATH
         self.path=os.path.join(CURPATH,"config")
         try:
@@ -35,9 +54,12 @@ class Config:
                 self.data=json.load(f)
         except:
             self.data=dict()
-        #set default values if not setted
+        
+        # Set default values if not found
         if not "recent" in self.data.keys():
             self.data["recent"]=list()
+        
+        self.filetypes = [("Text files","*.txt"), ("Chord","*.crd"), ("Tab","*.tab")]
 
     def save(self):
         with open(self.path, 'w') as f:
@@ -53,14 +75,18 @@ class Config:
         self.data[name]=x
     
     def insertRecentFile(self,new):
-        self.data["recent"].insert(0,new)
-        self.data["recent"]=self.data["recent"][:5]#max number of recent files allowed
-        self.data["recent"] = sorted(set(self.data["recent"]), key=lambda x: self.data["recent"].index(x)) #remove duplicates but keep recent files ordered
-        #how update menu at runtime?
+        self.data["recent"].insert(0, new)
+        self.data["recent"] = self.data["recent"][:5] # Max number of recent files allowed
+        # Remove duplicates but keep recent files ordered
+        self.data["recent"] = sorted(set(self.data["recent"]), key=lambda x: self.data["recent"].index(x))
+        # TODO: update menu at runtime
 
 class Gui:
+    """ Main GUI """
     def __init__(self,root):
+        
         global CONFIG, CURPATH
+        
         self.root=root
         root.geometry("%dx%d+0+0" % (round(root.winfo_screenwidth()*0.8), round(root.winfo_screenheight()*0.8))) #default window size 80%
         root.title('Chords Autoscroll 0.9b')
@@ -68,7 +94,7 @@ class Gui:
         root.option_add("*Font", "Helvetica 12") #default font
         root.protocol("WM_DELETE_WINDOW", self.onClose)
         
-        #general vars
+        # General variables
         if CONFIG.get("recent"):
             self.file=FileManager(os.path.dirname(CONFIG.get("recent")[0]))
         else:
@@ -78,7 +104,8 @@ class Gui:
         self.runningScroll=False
         self.settingsPattern = re.compile('\n\nChordsAutoscrollSettings:(\{.*\})')
         self.settings = {}
-        #menu
+        
+        # Menu
         self.menubar=Menu(self.root)
         self.filemenu=Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
@@ -88,7 +115,6 @@ class Gui:
         self.filemenu.add_command(label="Save as...",command=lambda: self.saveFile())
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Close",command=lambda: self.closeFile())
-        #recent files (I should update this at runtime...)
         self.filemenu.add_separator()
         
         self.recent=Menu(self.filemenu, tearoff=0)
@@ -100,31 +126,32 @@ class Gui:
         
         self.root.config(menu=self.menubar)
         
-        #root frame
+        # root frame
         froot=Frame(root)
         froot.pack(side=c.TOP,pady=5,padx=5,fill=c.BOTH,expand=1)
         
-        #main frame
+        # main frame
         fmain=Frame(froot)
         fmain.pack(side=c.TOP,fill=c.BOTH,expand=1,anchor=c.N)
         
-        f1=Frame(fmain) #text window frame
+        f1=Frame(fmain) #t ext window frame
         f1.pack(side=c.LEFT,fill=c.BOTH,expand=1)
-
-        self.txtMain=Text(f1,height=1,width=1,font=("Courier",14),undo=True) #maybe we can set a DARK MODE to help reading
+        
+        # TODO: DARK MODE to help reading
+        self.txtMain=Text(f1,height=1,width=1,font=("Courier",14),undo=True) 
         self.txtMain.pack(side=c.LEFT,fill=c.BOTH,expand=1)
 
         self.scrollbar=Scrollbar(f1,command=self.txtMain.yview)
         self.scrollbar.pack(side=c.LEFT,fill=c.Y)
         self.txtMain.config(yscrollcommand=self.scrollbar.set)
         
-        f2=Frame(fmain,width=100) #right buttons panel
+        f2=Frame(fmain,width=100) # right buttons panel
         f2.pack(side=c.RIGHT,anchor=c.N,padx=5,fill=c.X)
         self.btnPlay=Button(f2,text="Play",relief=c.RAISED,font=(None,0,"bold"))
         self.btnPlay.pack(side=c.TOP,padx=5,pady=5,fill=c.BOTH,expand=1,ipady=6)
         self.btnPlay['command']=lambda: self.autoscroll()
 
-        f2_1=Frame(f2) #child frame SPEED CONTROL
+        f2_1=Frame(f2) # child frame SPEED CONTROL
         f2_1.pack(side=c.TOP,anchor=c.N,pady=(10,0),fill=c.X)
         Label(f2_1,text="Speed:",font=("*", 8),anchor=c.E).pack(side=c.LEFT,padx=(2,0))
         Label(f2_1,font=("*", 8),anchor=c.W,textvariable=self.speed).pack(side=c.LEFT,padx=(0,2))
@@ -135,8 +162,7 @@ class Gui:
         self.btnSpeedDown.pack(side=c.TOP,padx=5,pady=(2,5),fill=c.BOTH,ipady=6)
         self.btnSpeedDown['command']=lambda: self.speedAdd(-1)
         
-        f2_2=Frame(f2,width=5) #child frame FONT SIZE
-        #f2_2.pack_propagate(0)
+        f2_2=Frame(f2,width=5) # child frame FONT SIZE
         f2_2.pack(side=c.TOP,anchor=c.N,pady=(10,0),fill=c.X)
         self.btnTextUp=Button(f2,text="A",font=(None,18))
         self.btnTextUp.pack(side=c.TOP,padx=5,pady=2,fill=c.BOTH,ipady=0)
@@ -145,12 +171,12 @@ class Gui:
         self.btnTextDown.pack(side=c.TOP,padx=5,pady=(2,5),fill=c.BOTH,ipady=8)
         self.btnTextDown['command']=lambda: self.changeFontSize(-1)
         
-        #credits
+        # Credits
         f4=Frame(root)
         f4.pack(side=c.BOTTOM,pady=0,padx=0,fill=c.X,anchor=c.S)
         Label(f4,text="© 2017 Pasquale Lafiosca. Distributed under the terms of the Apache License 2.0.",fg='#111111',bg='#BBBBBB',font=('',9),bd=0,padx=10).pack(fill=c.X,ipady=2,ipadx=2)
         
-        #shortcuts
+        # Shortcuts
         root.bind('<Control-s>', lambda e: self.saveFile(True))
         root.bind('<Control-S>', lambda e: self.saveFile(True))
         def startStop(e):
@@ -161,15 +187,18 @@ class Gui:
         root.bind('<Control-space>', startStop)
         
     def openNewFile(self,path=None):
+        
         global CONFIG
+        
         filename=None
         if not path:
-            filename=filedialog.askopenfilename(initialdir=self.file.getLastUsedDir(),filetypes=[("Text files","*.*")],title="Select a text file to open")
+            filename=filedialog.askopenfilename(initialdir=self.file.getLastUsedDir(), filetypes=CONFIG.filetypes, title="Select a text file to open")
         else:
             if os.path.isfile(path):
                 filename=path
             else:
                 messagebox.showwarning("Not found","Selected file was not found. Sorry.")
+        
         if filename:
             self.closeFile()
             self.recent.delete(0,len(CONFIG.get("recent"))-1)
@@ -179,6 +208,7 @@ class Gui:
             self.file.open(filename)
             self.txtMain.delete(1.0,c.END)
             content = self.file.getContent()
+            
             #Settings
             m = re.search(self.settingsPattern, content)
             if m and m.group(1):
@@ -206,12 +236,26 @@ class Gui:
         else:
             return False
     
-    def saveFile(self,current=False):
+    def saveFile(self, current=False):
+        
         global CONFIG
+        
+        # "Save" option (no dialog)
         if current:
             filename = self.file.getLastFile()
-        if not current or not filename: 
-            filename=filedialog.asksaveasfilename(initialdir=self.file.getLastUsedDir(),initialfile=self.file.getLastFile(),filetypes=[("Text files","*.txt")],title="Select destionation",defaultextension=".txt")
+        
+        # "Save..." option always open dialog
+        if not current or not filename:
+            
+            if self.file.getLastFile():
+                newName = os.path.split(self.file.getLastFile())[1]
+            else:
+                newName = "New chords"
+            
+            # Open dialog
+            filename = filedialog.asksaveasfilename(initialdir=self.file.getLastUsedDir(),initialfile=newName,filetypes=CONFIG.filetypes,title="Select destination",defaultextension=".txt")
+        
+        
         if filename:
             CONFIG.insertRecentFile(filename)
             self.file.open(filename)
@@ -309,9 +353,10 @@ class FileManager():
             self.lastUsedDir="/"
     
     def open(self,filename):
+        
         if filename:
-            self.filename=filename
-            self.lastUsedDir=os.path.split(filename)[0] #update last dir
+            self.filename = filename
+            self.lastUsedDir = os.path.split(filename)[0] #update last dir
 
     def close(self):
         self.filename=None
@@ -325,7 +370,7 @@ class FileManager():
     def getContent(self):
         if self.filename and os.path.isfile(self.filename):
             f=open(self.filename, 'r')
-            content=f.read() #ENCODING TO BE MANAGED...
+            content=f.read()
             f.close()
             return content
         else:
@@ -334,7 +379,7 @@ class FileManager():
     def writeContent(self,data):
         if self.filename and data:
             f=open(self.filename, 'w')
-            f.write(data) #ENCODING TO BE MANAGED...
+            f.write(data)
             f.close()
             return True
         else:
@@ -344,20 +389,21 @@ class FileManager():
         s = self.getContent()
         if s:
             originalSeed=hashlib.md5(s.encode()).hexdigest()
-        else: #if there's no open file, check if curMd5 differs from empty string
-            s=""
+        else: # if there's no open file, check if curMd5 differs from empty string
+            s = ""
             originalSeed=hashlib.md5(s.encode()).hexdigest()
         return curMd5 != originalSeed
     
     
 if __name__ == "__main__":
-    #current path
+    
+    # Current path
     CURPATH=os.path.dirname(os.path.realpath(__file__))
 
-    #configuration
+    # Configuration
     CONFIG = Config()
 
-    #starts gui
+    # Starts gui
     GUI=Gui(Tk())
     
     # Open file if passed as argument
