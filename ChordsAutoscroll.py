@@ -345,9 +345,9 @@ class FileManager():
         self.filename=None
         if defaultDir:
             self.lastUsedDir=defaultDir    
-        elif sys.platform=="linux": #linux
+        elif sys.platform=="linux": # Linux
             self.lastUsedDir="~"
-        elif sys.platform=="win32": #windows
+        elif sys.platform=="win32": # Windows
             self.lastUsedDir="%HOMEPATH%"
         else:
             self.lastUsedDir="/"
@@ -398,13 +398,13 @@ class FileManager():
 if __name__ == "__main__":
     
     # Current path
-    CURPATH=os.path.dirname(os.path.realpath(__file__))
+    CURPATH = os.path.dirname(os.path.realpath(__file__))
 
     # Configuration
     CONFIG = Config()
 
     # Starts gui
-    GUI=Gui(Tk())
+    GUI = Gui(Tk())
     
     # Open file if passed as argument
     if len(sys.argv)>1:
