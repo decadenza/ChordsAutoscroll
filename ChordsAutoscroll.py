@@ -41,7 +41,7 @@ from tkinter import (
     )
 from tkinter import constants as c
 
-
+VERSION = "0.9b"
 
 class Config:
     """ Configuration manager """
@@ -79,6 +79,7 @@ class Config:
         self.data["recent"] = self.data["recent"][:5] # Max number of recent files allowed
         # Remove duplicates but keep recent files ordered
         self.data["recent"] = sorted(set(self.data["recent"]), key=lambda x: self.data["recent"].index(x))
+        
         # TODO: update menu at runtime
 
 class Gui:
@@ -87,19 +88,34 @@ class Gui:
         
         global CONFIG, CURPATH
         
-        self.root=root
-        root.geometry("%dx%d+0+0" % (round(root.winfo_screenwidth()*0.8), round(root.winfo_screenheight()*0.8))) #default window size 80%
-        root.title('Chords Autoscroll 0.9b')
+        self.root = root
+
+        # Default window size: a square of 80% of the minimum display size.
+        # This makes it decent also on multiple monitor display.
+        squareSide = round(min(root.winfo_screenwidth(), root.winfo_screenheight()) * 0.80)
+        root.geometry("%dx%d+0+0" % (squareSide, squareSide)) 
+        
+        # Try to set fullscreen.
+        try:
+            root.state('zoomed') # Fit window to display on Windows / Mac.
+        except:
+            try:
+                root.attributes('-zoomed', True) # Same for Linux.
+            except:
+                # Cannot set zoomed status.
+                pass
+        
+        root.title('Chords Autoscroll '+VERSION)
         root.iconphoto(True,PhotoImage(file=os.path.join(CURPATH,"media","icon.png")))
-        root.option_add("*Font", "Helvetica 12") #default font
+        root.option_add("*Font", "Helvetica 12") # Default font
         root.protocol("WM_DELETE_WINDOW", self.onClose)
         
         # General variables
         if CONFIG.get("recent"):
-            self.file=FileManager(os.path.dirname(CONFIG.get("recent")[0]))
+            self.file = FileManager(os.path.dirname(CONFIG.get("recent")[0]))
         else:
-            self.file=FileManager()
-        self.speed=IntVar()
+            self.file = FileManager()
+        self.speed = IntVar()
         self.speed.set(30)
         self.runningScroll=False
         self.settingsPattern = re.compile('\n\nChordsAutoscrollSettings:(\{.*\})')
