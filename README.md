@@ -32,12 +32,8 @@ To execute:
 `python3 ~/ChordsAutoscroll/ChordsAutoscroll.py`
 Or add this command to your menu.
 
-# Future improvements
+# Future improvements and known issues
 
-I would appreciate help for the followings:
-- [ ] Update recent opened file list at runtime
-- [ ] Save settings for each file
-- [ ] Dark mode (black background)
 - [ ] Solve text encoding issues with some files
 - [ ] Package as application easy to install
 
