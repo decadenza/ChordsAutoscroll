@@ -8,11 +8,33 @@ This simple application solves the annoying scrolling problem when you sing or p
 You just need to open your file and click "Play". You can adjust speed and text size as you need and the setting will be appended to each file.
 The GUI also allows simple editing tasks.
 
-**NO REQUIREMENTS**:
+# Requirements
 
-Works with Python 3 with standard libraries
-
+Works with Python 3 with standard libraries.
 Tested with several versions, from *Python 3.4.2* to *Python 3.11.2*.
+
+You may need to install the Tkinter library, depending on your OS.
+To install the Tkinter on popular Linux distros.
+Debian/Ubuntu:
+```
+sudo apt install python3-tk -y  
+```
+Fedora:
+```
+sudo dnf install -y python3-tkinter
+```
+Arch:
+```
+sudo pacman -Syu tk --noconfirm 
+```
+REHL/CentOS6/CentOS7:
+```
+sudo yum install -y python3-tkinter
+```
+OpenSUSE:
+```
+sudo zypper in -y python-tk
+```
 
 # Usage
 
