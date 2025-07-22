@@ -115,7 +115,7 @@ class Gui:
 
         # root frame
         self.f_root = Frame(root, background=self.background, highlightthickness=0)
-        self.f_root.pack(side=c.TOP, pady=5, padx=5, fill=c.BOTH, expand=1)
+        self.f_root.pack(side=c.TOP, pady=5, padx=0, fill=c.BOTH, expand=1)
 
         # General variables
         if CONFIG.get("recent"):
