@@ -482,18 +482,16 @@ class FileManager:
 
 
 if __name__ == "__main__":
-    # Current path
+    # Load current path.
     CURPATH = os.path.dirname(os.path.realpath(__file__))
-
-    # Configuration
+    # Load configuration
     CONFIG = Config()
-
-    # Starts gui
+    # Initialise GUI.
     GUI = Gui(Tk())
-
-    # Open file if passed as argument
+    # Open a file passed as argument, if any.
     if len(sys.argv) > 1:
         GUI.openNewFile(sys.argv[1])
-
+    # Start GUI main loop.
     GUI.mainloop()
+    # Save configuration on exit.
     CONFIG.save()
