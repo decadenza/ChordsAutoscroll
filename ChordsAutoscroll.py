@@ -220,11 +220,11 @@ class Gui:
         self.btn_speed_down.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=6)
         self.btn_speed_down['command'] = lambda: self.speed_add(-1)
 
-        f2_2 = Frame(f2, width=5)  # child frame FONT SIZE
-        f2_2.pack(side=c.TOP, anchor=c.N, pady=(10, 0), fill=c.X)
+        # f2_2 = Frame(f2, width=5)  # child frame FONT SIZE
+        # f2_2.pack(side=c.TOP, anchor=c.N, pady=10, fill=c.X)
 
         self.btn_text_up = Button(f2, text="A", font=(None, 18), background=self.background, foreground=self.foreground)
-        self.btn_text_up.pack(side=c.TOP, padx=5, pady=2, fill=c.BOTH, ipady=0)
+        self.btn_text_up.pack(side=c.TOP, padx=5, pady=(10, 2), fill=c.BOTH, ipady=0)
         self.btn_text_up['command'] = lambda: self.change_font_size(1)
 
         self.btn_text_down = Button(f2, text="A", font=(None, 10), background=self.background,
@@ -232,9 +232,12 @@ class Gui:
         self.btn_text_down.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=8)
         self.btn_text_down['command'] = lambda: self.change_font_size(-1)
 
+        # f2_3 = Frame(f2, width=5)  # child frame Theme toggle.
+        # f2_3.pack(side=c.TOP, anchor=c.N, pady=10, fill=c.X)
+
         self.btn_dark_mode = Button(f2, text="Dark /\nLight", font=(None, 10), background=self.background,
                                   foreground=self.foreground)
-        self.btn_dark_mode.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=8)
+        self.btn_dark_mode.pack(side=c.TOP, padx=5, pady=10, fill=c.BOTH, ipady=8)
         self.btn_dark_mode['command'] = lambda: self.toggle_dark_mode()
 
         # Credits.
