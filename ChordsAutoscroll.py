@@ -93,8 +93,8 @@ class Gui:
 
         # Default window size: a square of 80% of the minimum display size.
         # This makes it decent also on multiple monitor display.
-        squareSide = round(min(root.winfo_screenwidth(), root.winfo_screenheight()) * 0.80)
-        root.geometry(f"{squareSide}x{squareSide}+0+0")
+        square_side = round(min(root.winfo_screenwidth(), root.winfo_screenheight()) * 0.80)
+        root.geometry(f"{square_side}x{square_side}+0+0")
 
         # Try to set fullscreen.
         try:
@@ -111,11 +111,11 @@ class Gui:
         root.title(f'Chords Autoscroll {VERSION}')
         root.iconphoto(True, PhotoImage(file=os.path.join(CURPATH, "media", "icon.png")))
         root.option_add("*Font", "Helvetica 12")  # Default font
-        root.protocol("WM_DELETE_WINDOW", self.onClose)
+        root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # root frame
-        self.froot = Frame(root, background=self.background, highlightthickness=0)
-        self.froot.pack(side=c.TOP, pady=5, padx=5, fill=c.BOTH, expand=1)
+        self.f_root = Frame(root, background=self.background, highlightthickness=0)
+        self.f_root.pack(side=c.TOP, pady=5, padx=5, fill=c.BOTH, expand=1)
 
         # General variables
         if CONFIG.get("recent"):
@@ -125,19 +125,19 @@ class Gui:
 
         self.speed = IntVar()
         self.speed.set(30)
-        self.runningScroll = False
-        self.settingsPattern = re.compile(r'\n\nChordsAutoscrollSettings:(\{.*\})')
+        self.running_scroll = False
+        self.settings_pattern = re.compile(r'\n\nChordsAutoscrollSettings:(\{.*\})')
         self.settings = {}
 
         self.build()
 
         # SECTION Shortcuts
-        root.bind('<Control-s>', lambda e: self.saveFile(True))
-        root.bind('<Control-S>', lambda e: self.saveFile(True))
+        root.bind('<Control-s>', lambda e: self.save_file(True))
+        root.bind('<Control-S>', lambda e: self.save_file(True))
 
         def start_stop(e):
-            if self.runningScroll:
-                self.stopAutoscroll()
+            if self.running_scroll:
+                self.stop_autoscroll()
             else:
                 self.autoscroll()
 
@@ -148,44 +148,44 @@ class Gui:
         """ Destroy and rebuild all the widgets in the GUI """
         global CURPATH, CONFIG
 
-        for widget in self.froot.winfo_children():
+        for widget in self.f_root.winfo_children():
             widget.destroy()  # Deleting widget
 
         self.root.configure(bg=self.background)
-        self.froot.configure(bg=self.background)
+        self.f_root.configure(bg=self.background)
 
         # Menu
         self.menubar = Menu(self.root, background=self.background, foreground=self.foreground)
-        self.filemenu = Menu(self.menubar, tearoff=0, background=self.background, foreground=self.foreground)
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
-        self.filemenu.add_command(label="Open...", command=lambda: self.openNewFile())
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label="Save (Ctrl+S)", command=lambda: self.saveFile(True))
-        self.filemenu.add_command(label="Save as...", command=lambda: self.saveFile())
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label="Close", command=lambda: self.closeFile())
-        self.filemenu.add_separator()
+        self.file_menu = Menu(self.menubar, tearoff=0, background=self.background, foreground=self.foreground)
+        self.menubar.add_cascade(label="File", menu=self.file_menu)
+        self.file_menu.add_command(label="Open...", command=lambda: self.open_new_file())
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Save (Ctrl+S)", command=lambda: self.save_file(True))
+        self.file_menu.add_command(label="Save as...", command=lambda: self.save_file())
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Close", command=lambda: self.close_file())
+        self.file_menu.add_separator()
 
         # SECTION Load recent files.
-        self.recent = Menu(self.filemenu, tearoff=0, background=self.background, foreground=self.foreground)
-        self.filemenu.add_cascade(label="Recent files", menu=self.recent)
+        self.recent = Menu(self.file_menu, tearoff=0, background=self.background, foreground=self.foreground)
+        self.file_menu.add_cascade(label="Recent files", menu=self.recent)
 
         if CONFIG.get("recent") and len(CONFIG.get("recent")) > 0:
             for _, p in enumerate(CONFIG.get("recent")):
-                self.recent.add_command(label=str(p), command=lambda p=p: self.openNewFile(str(p)))
+                self.recent.add_command(label=str(p), command=lambda p=p: self.open_new_file(str(p)))
         # !SECTION
 
         # Set colors of root and root frame.
         self.root.config(menu=self.menubar)
 
         # Main frame.
-        fmain = Frame(self.froot, background=self.background, highlightthickness=0)
-        fmain.pack(side=c.TOP, fill=c.BOTH, expand=1, anchor=c.N)
+        f_main = Frame(self.f_root, background=self.background, highlightthickness=0)
+        f_main.pack(side=c.TOP, fill=c.BOTH, expand=1, anchor=c.N)
 
-        f1 = Frame(fmain, background=self.background, highlightthickness=0)  # text window frame
+        f1 = Frame(f_main, background=self.background, highlightthickness=0)  # text window frame
         f1.pack(side=c.LEFT, fill=c.BOTH, expand=1)
 
-        self.txtMain = Text(f1, height=1, width=1, font=("Courier", 14),
+        self.txt_main = Text(f1, height=1, width=1, font=("Courier", 14),
                             undo=True,
                             background=self.background,
                             foreground=self.foreground,
@@ -194,18 +194,18 @@ class Gui:
                             padx=5,
                             pady=5
                             )
-        self.txtMain.pack(side=c.LEFT, fill=c.BOTH, expand=1)
+        self.txt_main.pack(side=c.LEFT, fill=c.BOTH, expand=1)
 
-        self.scrollbar = Scrollbar(f1, command=self.txtMain.yview, background=self.background)
+        self.scrollbar = Scrollbar(f1, command=self.txt_main.yview, background=self.background)
         self.scrollbar.pack(side=c.LEFT, fill=c.Y)
-        self.txtMain.config(yscrollcommand=self.scrollbar.set)
+        self.txt_main.config(yscrollcommand=self.scrollbar.set)
 
-        f2 = Frame(fmain, width=100, background=self.background, highlightthickness=0)  # right buttons panel
+        f2 = Frame(f_main, width=100, background=self.background, highlightthickness=0)  # right buttons panel
         f2.pack(side=c.RIGHT, anchor=c.N, padx=5, fill=c.X)
-        self.btnPlay = Button(f2, text="Play", relief=c.RAISED, font=(None, 0, "bold"), background=self.background,
+        self.btn_play = Button(f2, text="Play", relief=c.RAISED, font=(None, 0, "bold"), background=self.background,
                               foreground=self.foreground)
-        self.btnPlay.pack(side=c.TOP, padx=5, pady=5, fill=c.BOTH, expand=1, ipady=6)
-        self.btnPlay['command'] = lambda: self.autoscroll()
+        self.btn_play.pack(side=c.TOP, padx=5, pady=5, fill=c.BOTH, expand=1, ipady=6)
+        self.btn_play['command'] = lambda: self.autoscroll()
 
         f2_1 = Frame(f2, background=self.background)  # child frame SPEED CONTROL
         f2_1.pack(side=c.TOP, anchor=c.N, pady=(10, 0), fill=c.X)
@@ -213,32 +213,32 @@ class Gui:
               foreground=self.foreground).pack(side=c.LEFT, padx=(2, 0))
         Label(f2_1, font=("*", 8), anchor=c.W, textvariable=self.speed, background=self.background,
               foreground=self.foreground).pack(side=c.LEFT, padx=(0, 2))
-        self.btnSpeedUp = Button(f2, text="+", background=self.background, foreground=self.foreground)
-        self.btnSpeedUp.pack(side=c.TOP, padx=5, pady=2, fill=c.BOTH, ipady=6)
-        self.btnSpeedUp['command'] = lambda: self.speedAdd(1)
-        self.btnSpeedDown = Button(f2, text="-", background=self.background, foreground=self.foreground)
-        self.btnSpeedDown.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=6)
-        self.btnSpeedDown['command'] = lambda: self.speedAdd(-1)
+        self.btn_speed_up = Button(f2, text="+", background=self.background, foreground=self.foreground)
+        self.btn_speed_up.pack(side=c.TOP, padx=5, pady=2, fill=c.BOTH, ipady=6)
+        self.btn_speed_up['command'] = lambda: self.speed_add(1)
+        self.btn_speed_down = Button(f2, text="-", background=self.background, foreground=self.foreground)
+        self.btn_speed_down.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=6)
+        self.btn_speed_down['command'] = lambda: self.speed_add(-1)
 
         f2_2 = Frame(f2, width=5)  # child frame FONT SIZE
         f2_2.pack(side=c.TOP, anchor=c.N, pady=(10, 0), fill=c.X)
 
-        self.btnTextUp = Button(f2, text="A", font=(None, 18), background=self.background, foreground=self.foreground)
-        self.btnTextUp.pack(side=c.TOP, padx=5, pady=2, fill=c.BOTH, ipady=0)
-        self.btnTextUp['command'] = lambda: self.changeFontSize(1)
+        self.btn_text_up = Button(f2, text="A", font=(None, 18), background=self.background, foreground=self.foreground)
+        self.btn_text_up.pack(side=c.TOP, padx=5, pady=2, fill=c.BOTH, ipady=0)
+        self.btn_text_up['command'] = lambda: self.change_font_size(1)
 
-        self.btnTextDown = Button(f2, text="A", font=(None, 10), background=self.background,
+        self.btn_text_down = Button(f2, text="A", font=(None, 10), background=self.background,
                                   foreground=self.foreground)
-        self.btnTextDown.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=8)
-        self.btnTextDown['command'] = lambda: self.changeFontSize(-1)
+        self.btn_text_down.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=8)
+        self.btn_text_down['command'] = lambda: self.change_font_size(-1)
 
-        self.btnDarkMode = Button(f2, text="Dark /\nLight", font=(None, 10), background=self.background,
+        self.btn_dark_mode = Button(f2, text="Dark /\nLight", font=(None, 10), background=self.background,
                                   foreground=self.foreground)
-        self.btnDarkMode.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=8)
-        self.btnDarkMode['command'] = lambda: self.toggleDarkMode()
+        self.btn_dark_mode.pack(side=c.TOP, padx=5, pady=(2, 5), fill=c.BOTH, ipady=8)
+        self.btn_dark_mode['command'] = lambda: self.toggle_dark_mode()
 
         # Credits.
-        f4 = Frame(self.froot)
+        f4 = Frame(self.f_root)
         f4.pack(side=c.BOTTOM, pady=0, padx=0, fill=c.X, anchor=c.S)
         Label(f4,
               text="© 2017 Pasquale Lafiosca. Distributed under the terms of the Apache License 2.0.",
@@ -250,11 +250,11 @@ class Gui:
 
         # Update root and main frame colors.
         self.root.configure(bg=self.background)
-        self.froot.configure(bg=self.background)
+        self.f_root.configure(bg=self.background)
 
         # Update menu colors.
         self.menubar.config(background=self.background, foreground=self.foreground)
-        self.filemenu.config(background=self.background, foreground=self.foreground)
+        self.file_menu.config(background=self.background, foreground=self.foreground)
         self.recent.config(background=self.background, foreground=self.foreground)
 
         # Function to recursively update colors of children widgets.
@@ -269,21 +269,21 @@ class Gui:
                 update_children(child) # Recursively call for nested frames/widgets.
 
         # Start updating from the root frame.
-        update_children(self.froot)
+        update_children(self.f_root)
 
         # Explicitly update specific widgets that might not be caught by the recursive call or need special handling.
-        self.txtMain.config(background=self.background, foreground=self.foreground, insertbackground=self.foreground)
+        self.txt_main.config(background=self.background, foreground=self.foreground, insertbackground=self.foreground)
         self.scrollbar.config(background=self.background) # Scrollbar might only have background.
 
         # Update buttons explicitly as they are often styled differently.
-        self.btnPlay.config(background=self.background, foreground=self.foreground)
-        self.btnSpeedUp.config(background=self.background, foreground=self.foreground)
-        self.btnSpeedDown.config(background=self.background, foreground=self.foreground)
-        self.btnTextUp.config(background=self.background, foreground=self.foreground)
-        self.btnTextDown.config(background=self.background, foreground=self.foreground)
-        self.btnDarkMode.config(background=self.background, foreground=self.foreground)
+        self.btn_play.config(background=self.background, foreground=self.foreground)
+        self.btn_speed_up.config(background=self.background, foreground=self.foreground)
+        self.btn_speed_down.config(background=self.background, foreground=self.foreground)
+        self.btn_text_up.config(background=self.background, foreground=self.foreground)
+        self.btn_text_down.config(background=self.background, foreground=self.foreground)
+        self.btn_dark_mode.config(background=self.background, foreground=self.foreground)
         
-    def toggleDarkMode(self):
+    def toggle_dark_mode(self):
         global CONFIG
 
         # Swap values.
@@ -306,12 +306,12 @@ class Gui:
             self.foreground = "#E5E5E5"
             self.background = "#000000"
 
-    def openNewFile(self, path=None):
+    def open_new_file(self, path=None):
         global CONFIG
 
         filename = None
         if not path:
-            filename = filedialog.askopenfilename(initialdir=self.file.getLastUsedDir(), filetypes=CONFIG.filetypes,
+            filename = filedialog.askopenfilename(initialdir=self.file.get_last_used_dir(), filetypes=CONFIG.filetypes,
                                                   title="Select a text file to open")
         else:
             if os.path.isfile(path):
@@ -320,32 +320,32 @@ class Gui:
                 messagebox.showwarning("Not found", "Selected file was not found. Sorry.")
 
         if filename:
-            self.closeFile()
+            self.close_file()
             self.recent.delete(0, len(CONFIG.get("recent")) - 1)
 
             self.file.open(filename)
-            self.txtMain.delete(1.0, c.END)
-            content = self.file.getContent()
+            self.txt_main.delete(1.0, c.END)
+            content = self.file.get_content()
 
-            self.insertRecentFile(filename)
+            self.insert_recent_file(filename)
 
             # Settings
-            m = re.search(self.settingsPattern, content)
+            m = re.search(self.settings_pattern, content)
             if m and m.group(1):
                 try:
                     self.settings = json.loads(m.group(1))  # Loads settings from file
                     self.speed.set(self.settings["Speed"])
-                    self._setFontSize(self.settings["Size"])
+                    self._set_font_size(self.settings["Size"])
                 except Exception:
                     messagebox.showwarning("Warning", "Cannot load setting data. Sorry.")
-                    self._setSettingsData()
+                    self._set_settings_data()
             else:
-                self._setSettingsData()
+                self._set_settings_data()
 
-            content = re.sub(self.settingsPattern, '', content)  # Remove settings string before write on screen
-            self.txtMain.insert(1.0, content)
+            content = re.sub(self.settings_pattern, '', content)  # Remove settings string before write on screen
+            self.txt_main.insert(1.0, content)
 
-    def insertRecentFile(self, new):
+    def insert_recent_file(self, new):
         """ Add new recent file to the config and to the menu. """
         CONFIG.data["recent"].insert(0, new)
         CONFIG.data["recent"] = CONFIG.data["recent"][:5]  # Max number of recent files allowed
@@ -353,170 +353,170 @@ class Gui:
         # Update all menu items.
         self.recent.delete(0, len(CONFIG.data["recent"]) - 1)
         for p in CONFIG.data["recent"]:
-            self.recent.add_command(label=str(p), command=lambda f=p: self.openNewFile(str(f)))
+            self.recent.add_command(label=str(p), command=lambda f=p: self.open_new_file(str(f)))
 
-    def _setSettingsData(self):
-        self.settings = {"Speed": self.speed.get(), "Size": self._getFontSize()}
+    def _set_settings_data(self):
+        self.settings = {"Speed": self.speed.get(), "Size": self._get_font_size()}
 
-    def _settingsChanged(self):
+    def _settings_changed(self):
         if "Speed" in self.settings and "Size" in self.settings and (
-                self.settings["Speed"] != self.speed.get() or self.settings["Size"] != self._getFontSize()):
+                self.settings["Speed"] != self.speed.get() or self.settings["Size"] != self._get_font_size()):
             return True
         return False
 
-    def saveFile(self, current=False):
+    def save_file(self, current=False):
         global CONFIG
 
         # "Save" option (no dialog)
-        filename = self.file.getLastFile() if current else None
+        filename = self.file.get_last_file() if current else None
 
         # "Save..." option always open dialog
         if not current or not filename:
-            if self.file.getLastFile():
-                newName = os.path.split(self.file.getLastFile())[1]
+            if self.file.get_last_file():
+                new_name = os.path.split(self.file.get_last_file())[1]
             else:
-                newName = "New chords"
+                new_name = "New chords"
 
             # Open dialog
-            filename = filedialog.asksaveasfilename(initialdir=self.file.getLastUsedDir(), initialfile=newName,
+            filename = filedialog.asksaveasfilename(initialdir=self.file.get_last_used_dir(), initialfile=new_name,
                                                     filetypes=CONFIG.filetypes, title="Select destination",
                                                     defaultextension=".txt")
 
         if filename:
-            self.insertRecentFile(filename)
+            self.insert_recent_file(filename)
             self.file.open(filename)
-            self._setSettingsData()
-            self.file.writeContent(
-                self.txtMain.get(1.0, c.END)[:-1] + "\n\nChordsAutoscrollSettings:" + json.dumps(self.settings))
+            self._set_settings_data()
+            self.file.write_content(
+                self.txt_main.get(1.0, c.END)[:-1] + "\n\nChordsAutoscrollSettings:" + json.dumps(self.settings))
 
-    def closeFile(self):
-        if not self.txtMain.get(1.0, c.END)[:-1]:  # Empty view
+    def close_file(self):
+        if not self.txt_main.get(1.0, c.END)[:-1]:  # Empty view
             return True
-        if self.file.hasChanged(hashlib.md5(
-                (self.txtMain.get(1.0, c.END)[:-1] + "\n\nChordsAutoscrollSettings:" + json.dumps(
-                    self.settings)).encode()).hexdigest()) or self._settingsChanged():
+        if self.file.has_changed(hashlib.md5(
+                (self.txt_main.get(1.0, c.END)[:-1] + "\n\nChordsAutoscrollSettings:" + json.dumps(
+                    self.settings)).encode()).hexdigest()) or self._settings_changed():
             if messagebox.askyesno("Save changes", "Current document has been modified. Do you want to save changes?"):
-                self.saveFile()
-        self.txtMain.delete(1.0, c.END)
+                self.save_file()
+        self.txt_main.delete(1.0, c.END)
         self.file.close()
         return True
 
     def mainloop(self):
         self.root.mainloop()
 
-    def onClose(self):
+    def on_close(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.closeFile()
+            self.close_file()
             self.root.destroy()
 
-    def _getFontSize(self):
-        return font.Font(font=self.txtMain["font"])["size"]
+    def _get_font_size(self):
+        return font.Font(font=self.txt_main["font"])["size"]
 
-    def _setFontSize(self, newsize):
-        f = font.Font(font=self.txtMain["font"])
-        f.config(size=newsize)
-        self.txtMain.config(font=f)
-        self.txtMain.update_idletasks()
+    def _set_font_size(self, new_size):
+        f = font.Font(font=self.txt_main["font"])
+        f.config(size=new_size)
+        self.txt_main.config(font=f)
+        self.txt_main.update_idletasks()
 
-    def changeFontSize(self, a):
-        f = font.Font(font=self.txtMain["font"])
-        newsize = f["size"] + a
-        if newsize < 8 or newsize > 72:  # limits
+    def change_font_size(self, a):
+        f = font.Font(font=self.txt_main["font"])
+        new_size = f["size"] + a
+        if new_size < 8 or new_size > 72:  # limits
             return
-        f.config(size=newsize)
-        self.txtMain.config(font=f)
-        self.txtMain.update_idletasks()
+        f.config(size=new_size)
+        self.txt_main.config(font=f)
+        self.txt_main.update_idletasks()
 
     def autoscroll(self):
-        if not self.runningScroll and threading.active_count() < 2:  # Check to avoid multiple scrolling threads
+        if not self.running_scroll and threading.active_count() < 2:  # Check to avoid multiple scrolling threads
             if float(self.scrollbar.get()[1]) == 1:  # if we are at the end, let's start from beginning
-                self.txtMain.see(1.0)
+                self.txt_main.see(1.0)
 
-            self.runningScroll = True
+            self.running_scroll = True
             # INITIAL DELAY
-            self.txtMain.mark_set("initialDelay", 1.0)
-            self.txtMain.mark_gravity("initialDelay", c.RIGHT)
-            self.txtMain.insert("initialDelay", os.linesep * 20)  # SET CONSTANT HERE
-            self.txtMain.config(state=c.DISABLED)
-            self.txtMain.update_idletasks()
+            self.txt_main.mark_set("initialDelay", 1.0)
+            self.txt_main.mark_gravity("initialDelay", c.RIGHT)
+            self.txt_main.insert("initialDelay", os.linesep * 20)  # SET CONSTANT HERE
+            self.txt_main.config(state=c.DISABLED)
+            self.txt_main.update_idletasks()
             threading.Thread(target=self.autoscroll_callback, name="ScrollingThread", daemon=True).start()
 
-            self.btnPlay.config(text="Stop", relief=c.SUNKEN, command=lambda: self.stopAutoscroll())
-            self.btnPlay.update_idletasks()
+            self.btn_play.config(text="Stop", relief=c.SUNKEN, command=lambda: self.stop_autoscroll())
+            self.btn_play.update_idletasks()
 
     def autoscroll_callback(self):
-        while float(self.scrollbar.get()[1]) < 1 and self.runningScroll:
-            self.txtMain.yview(c.SCROLL, 1, c.UNITS)
+        while float(self.scrollbar.get()[1]) < 1 and self.running_scroll:
+            self.txt_main.yview(c.SCROLL, 1, c.UNITS)
             end = time.time() + 60 / self.speed.get()
-            while time.time() < end and self.runningScroll:  # trick to stop immediately
+            while time.time() < end and self.running_scroll:  # trick to stop immediately
                 time.sleep(.1)
 
-        if self.runningScroll:
-            self.stopAutoscroll()
+        if self.running_scroll:
+            self.stop_autoscroll()
 
-    def stopAutoscroll(self):
-        self.runningScroll = False
-        self.txtMain.config(state=c.NORMAL)
-        self.txtMain.delete(1.0, "initialDelay")
-        self.txtMain.mark_unset("initialDelay")
-        self.txtMain.update_idletasks()
-        self.btnPlay.config(text="Play", relief=c.RAISED, command=lambda: self.autoscroll())
-        self.btnPlay.update_idletasks()
+    def stop_autoscroll(self):
+        self.running_scroll = False
+        self.txt_main.config(state=c.NORMAL)
+        self.txt_main.delete(1.0, "initialDelay")
+        self.txt_main.mark_unset("initialDelay")
+        self.txt_main.update_idletasks()
+        self.btn_play.config(text="Play", relief=c.RAISED, command=lambda: self.autoscroll())
+        self.btn_play.update_idletasks()
 
-    def speedAdd(self, n):
+    def speed_add(self, n):
         n = self.speed.get() + n
         if 0 < n < 1000:
             self.speed.set(n)
 
 
 class FileManager:
-    def __init__(self, defaultDir=None):
+    def __init__(self, default_dir=None):
         self.filename = None
-        if defaultDir:
-            self.lastUsedDir = defaultDir
+        if default_dir:
+            self.last_used_dir = default_dir
         elif sys.platform == "linux":  # Linux
-            self.lastUsedDir = "~"
+            self.last_used_dir = "~"
         elif sys.platform == "win32":  # Windows
-            self.lastUsedDir = "%HOMEPATH%"
+            self.last_used_dir = "%HOMEPATH%"
         else:
-            self.lastUsedDir = "/"
+            self.last_used_dir = "/"
 
     def open(self, filename):
         if filename:
             self.filename = filename
-            self.lastUsedDir = os.path.split(filename)[0]  # update last dir
+            self.last_used_dir = os.path.split(filename)[0]  # update last dir
 
     def close(self):
         self.filename = None
 
-    def getLastUsedDir(self):
-        return self.lastUsedDir
+    def get_last_used_dir(self):
+        return self.last_used_dir
 
-    def getLastFile(self):
+    def get_last_file(self):
         return self.filename
 
-    def getContent(self):
+    def get_content(self):
         if self.filename and os.path.isfile(self.filename):
             with open(self.filename, 'r') as f:
                 content = f.read()
             return content
         return False
 
-    def writeContent(self, data):
+    def write_content(self, data):
         if self.filename and data:
             with open(self.filename, 'w') as f:
                 f.write(data)
             return True
         return False
 
-    def hasChanged(self, curMd5):
-        s = self.getContent()
+    def has_changed(self, cur_md5):
+        s = self.get_content()
         if s:
-            originalSeed = hashlib.md5(s.encode()).hexdigest()
-        else:  # if there's no open file, check if curMd5 differs from empty string
+            original_seed = hashlib.md5(s.encode()).hexdigest()
+        else:  # if there's no open file, check if cur_md5 differs from empty string
             s = ""
-            originalSeed = hashlib.md5(s.encode()).hexdigest()
-        return curMd5 != originalSeed
+            original_seed = hashlib.md5(s.encode()).hexdigest()
+        return cur_md5 != original_seed
 
 
 if __name__ == "__main__":
@@ -528,7 +528,7 @@ if __name__ == "__main__":
     GUI = Gui(Tk())
     # Open a file passed as argument, if any.
     if len(sys.argv) > 1:
-        GUI.openNewFile(sys.argv[1])
+        GUI.open_new_file(sys.argv[1])
     # Start GUI main loop.
     GUI.mainloop()
     # Save configuration on exit.
