@@ -245,46 +245,13 @@ class Gui:
               background=self.background, foreground=self.foreground, font=('', 9), bd=0, padx=10) \
             .pack(fill=c.X, ipady=2, ipadx=2)
 
-    def update_widget_colors(self):
-        """ Updates the background and foreground colors of all widgets based on the current theme. """
-
-        # Update root and main frame colors.
-        self.root.configure(bg=self.background)
-        self.f_root.configure(bg=self.background)
-
-        # Update menu colors.
-        self.menubar.config(background=self.background, foreground=self.foreground)
-        self.file_menu.config(background=self.background, foreground=self.foreground)
-        self.recent.config(background=self.background, foreground=self.foreground)
-
-        # Function to recursively update colors of children widgets.
-        def update_children(parent_widget):
-            for child in parent_widget.winfo_children():
-                # Check if the widget has background/foreground attributes.
-                try:
-                    child.config(background=self.background, foreground=self.foreground)
-                except Exception:
-                    # Some widgets might not have these attributes (e.g., scrollbar, specific ttk widgets).
-                    pass
-                update_children(child) # Recursively call for nested frames/widgets.
-
-        # Start updating from the root frame.
-        update_children(self.f_root)
-
-        # Explicitly update specific widgets that might not be caught by the recursive call or need special handling.
-        self.txt_main.config(background=self.background, foreground=self.foreground, insertbackground=self.foreground)
-        self.scrollbar.config(background=self.background) # Scrollbar might only have background.
-
-        # Update buttons explicitly as they are often styled differently.
-        self.btn_play.config(background=self.background, foreground=self.foreground)
-        self.btn_speed_up.config(background=self.background, foreground=self.foreground)
-        self.btn_speed_down.config(background=self.background, foreground=self.foreground)
-        self.btn_text_up.config(background=self.background, foreground=self.foreground)
-        self.btn_text_down.config(background=self.background, foreground=self.foreground)
-        self.btn_dark_mode.config(background=self.background, foreground=self.foreground)
-        
     def toggle_dark_mode(self):
+        """ Switches between light and dark mode. """
         global CONFIG
+
+        # Preserve current text content and scroll position.
+        current_text = self.txt_main.get("1.0", c.END + "-1c") # Exclude the last newline character.
+        current_scroll = self.scrollbar.get() # Returns (fraction_top, fraction_bottom)
 
         # Swap values.
         if CONFIG.theme == "dark":
@@ -292,8 +259,17 @@ class Gui:
         elif CONFIG.theme == "light":
             CONFIG.theme = "dark"
 
-        self.apply_theme()
-        self.update_widget_colors()
+        self.apply_theme() # This sets self.background and self.foreground
+        self.build()       # Rebuilds the entire GUI
+
+        # Restore text content and scroll position
+        self.txt_main.delete("1.0", c.END)
+        self.txt_main.insert("1.0", current_text)
+        self.txt_main.yview_moveto(current_scroll[0]) # Move to the top fraction of the original view
+
+        # Ensure the text widget state is correct after rebuild if it changes
+        if self.running_scroll: # If autoscroll was active, re-disable text entry
+            self.txt_main.config(state=c.DISABLED)
 
     def apply_theme(self):
         global CONFIG
