@@ -106,7 +106,7 @@ class Gui:
                 # Cannot set zoomed status.
                 pass
 
-        self.applyTheme()  # To be called before using color attributes.
+        self.apply_theme()  # To be called before using color attributes.
 
         root.title(f'Chords Autoscroll {VERSION}')
         root.iconphoto(True, PhotoImage(file=os.path.join(CURPATH, "media", "icon.png")))
@@ -135,13 +135,13 @@ class Gui:
         root.bind('<Control-s>', lambda e: self.saveFile(True))
         root.bind('<Control-S>', lambda e: self.saveFile(True))
 
-        def startStop(e):
+        def start_stop(e):
             if self.runningScroll:
                 self.stopAutoscroll()
             else:
                 self.autoscroll()
 
-        root.bind('<Control-space>', startStop)
+        root.bind('<Control-space>', start_stop)
         # !SECTION
 
     def build(self):
@@ -245,6 +245,44 @@ class Gui:
               background=self.background, foreground=self.foreground, font=('', 9), bd=0, padx=10) \
             .pack(fill=c.X, ipady=2, ipadx=2)
 
+    def update_widget_colors(self):
+        """ Updates the background and foreground colors of all widgets based on the current theme. """
+
+        # Update root and main frame colors.
+        self.root.configure(bg=self.background)
+        self.froot.configure(bg=self.background)
+
+        # Update menu colors.
+        self.menubar.config(background=self.background, foreground=self.foreground)
+        self.filemenu.config(background=self.background, foreground=self.foreground)
+        self.recent.config(background=self.background, foreground=self.foreground)
+
+        # Function to recursively update colors of children widgets.
+        def update_children(parent_widget):
+            for child in parent_widget.winfo_children():
+                # Check if the widget has background/foreground attributes.
+                try:
+                    child.config(background=self.background, foreground=self.foreground)
+                except Exception:
+                    # Some widgets might not have these attributes (e.g., scrollbar, specific ttk widgets).
+                    pass
+                update_children(child) # Recursively call for nested frames/widgets.
+
+        # Start updating from the root frame.
+        update_children(self.froot)
+
+        # Explicitly update specific widgets that might not be caught by the recursive call or need special handling.
+        self.txtMain.config(background=self.background, foreground=self.foreground, insertbackground=self.foreground)
+        self.scrollbar.config(background=self.background) # Scrollbar might only have background.
+
+        # Update buttons explicitly as they are often styled differently.
+        self.btnPlay.config(background=self.background, foreground=self.foreground)
+        self.btnSpeedUp.config(background=self.background, foreground=self.foreground)
+        self.btnSpeedDown.config(background=self.background, foreground=self.foreground)
+        self.btnTextUp.config(background=self.background, foreground=self.foreground)
+        self.btnTextDown.config(background=self.background, foreground=self.foreground)
+        self.btnDarkMode.config(background=self.background, foreground=self.foreground)
+        
     def toggleDarkMode(self):
         global CONFIG
 
@@ -254,10 +292,10 @@ class Gui:
         elif CONFIG.theme == "light":
             CONFIG.theme = "dark"
 
-        self.applyTheme()
-        self.build()
+        self.apply_theme()
+        self.update_widget_colors()
 
-    def applyTheme(self):
+    def apply_theme(self):
         global CONFIG
 
         # Light mode is default.
