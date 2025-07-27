@@ -300,7 +300,9 @@ class Gui:
 
         if filename:
             self.close_file()
-            self.recent.delete(0, len(CONFIG.get("recent")) - 1)
+            
+            if len(CONFIG.get("recent"))>5:
+                self.recent.delete(0, len(CONFIG.get("recent")) - 1)
 
             self.file.open(filename)
             self.txt_main.delete(1.0, c.END)
