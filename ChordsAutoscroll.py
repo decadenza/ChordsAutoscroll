@@ -300,10 +300,6 @@ class Gui:
 
         if filename:
             self.close_file()
-            
-            if len(CONFIG.get("recent"))>5:
-                self.recent.delete(0, len(CONFIG.get("recent")) - 1)
-
             self.file.open(filename)
             self.txt_main.delete(1.0, c.END)
             content = self.file.get_content()
@@ -329,9 +325,10 @@ class Gui:
     def insert_recent_file(self, new):
         """ Add new recent file to the config and to the menu. """
         CONFIG.data["recent"].insert(0, new)
-        CONFIG.data["recent"] = CONFIG.data["recent"][:5]  # Max number of recent files allowed
+        # Remov duplicates. Force the max number of recent files allowed. 
+        CONFIG.data["recent"] = list(dict.fromkeys(CONFIG.data["recent"]))[:5] 
 
-        # Update all menu items.
+        # Recreate all menu items.
         self.recent.delete(0, len(CONFIG.data["recent"]) - 1)
         for p in CONFIG.data["recent"]:
             self.recent.add_command(label=str(p), command=lambda f=p: self.open_new_file(str(f)))
